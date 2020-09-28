@@ -1,62 +1,58 @@
 class VigenereCipheringMachine {
-  //https://www.youtube.com/watch?v=kueULgDkA5k - sourse
-  en = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-  typeMachineDirect;
-  constructor(type) {
-    if (type === false) {
-      this.typeMachineDirect = false;
-    } else {
-      this.typeMachineDirect = true;
-    }
-  }
-  encrypt(msg, key) {
-    if (msg == undefined || key == undefined) throw new Error("no args");
-    msg = msg.toUpperCase().split("");
-    key = key.toUpperCase().split("");
-    let res = [];
-    let k = 0;
-    for (let i = 0; i < msg.length; i++) {
-      if (this.en.indexOf(msg[i]) != -1) {
-        let code = (msg[i].charCodeAt() + key[k].charCodeAt()) % 26;
-        if (code > 26) code -= 26;
-        let char = String.fromCharCode(code + 65);
-        res.push(char);
-        k++;
-        if (k > key.length - 1) k = 0;
-      } else {
-        res.push(msg[i]);
-      }
-    }
-    if (this.typeMachineDirect) {
-      return res.join("");
-    } else {
-      return res.reverse().join("");
-    }
+  constructor(isDirect = true) {
+    this.isDirect = isDirect;
   }
 
-  decrypt(msg, key) {
-    if (msg == undefined || key == undefined) throw new Error("no args");
-    msg = msg.toUpperCase().split("");
-    key = key.toUpperCase().split("");
-    let res = [];
-    let k = 0;
-    for (let i = 0; i < msg.length; i++) {
-      if (this.en.indexOf(msg[i]) != -1) {
-        let code = (msg[i].charCodeAt() - key[k].charCodeAt()) % 26;
-        if (code < 0) code += 26;
-        let char = String.fromCharCode(code + 65);
-        res.push(char);
-        k++;
-        if (k > key.length - 1) k = 0;
-      } else {
-        res.push(msg[i]);
-      }
+  encrypt(message, key) {
+    if (!message || !key) throw Error("Missing parameters");
+
+    let encryptedMessage = "";
+    key = key
+      .repeat(Math.ceil(message.length / key.length))
+      .slice(0, message.length)
+      .toUpperCase();
+    message = message.toUpperCase();
+    let j = -1;
+
+    for (let i = 0; i < message.length; i++) {
+      if (message[i] != " ") j++;
+      encryptedMessage +=
+        message[i].charCodeAt(0) > 64 && message[i].charCodeAt(0) < 91
+          ? String.fromCharCode(
+              ((message.charCodeAt(i) + key.charCodeAt(j)) % 26) + 65
+            )
+          : message[i];
     }
-    if (this.typeMachineDirect) {
-      return res.join("");
-    } else {
-      return res.reverse().join("");
+
+    return this.isDirect
+      ? encryptedMessage
+      : encryptedMessage.split("").reverse().join("");
+  }
+
+  decrypt(encryptedMessage, key) {
+    if (!encryptedMessage || !key) throw Error("Missing parameters");
+
+    let message = "";
+    key = key
+      .repeat(Math.ceil(encryptedMessage.length / key.length))
+      .slice(0, encryptedMessage.length)
+      .toUpperCase();
+    encryptedMessage = encryptedMessage.toUpperCase();
+    let j = -1;
+
+    for (let i = 0; i < encryptedMessage.length; i++) {
+      if (encryptedMessage[i] != " ") j++;
+      message +=
+        encryptedMessage[i].charCodeAt(0) > 64 &&
+        encryptedMessage[i].charCodeAt(0) < 91
+          ? String.fromCharCode(
+              ((encryptedMessage.charCodeAt(i) + 26 - key.charCodeAt(j)) % 26) +
+                65
+            )
+          : encryptedMessage[i];
     }
+
+    return this.isDirect ? message : message.split("").reverse().join("");
   }
 }
 
